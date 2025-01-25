@@ -93,6 +93,32 @@ export const getGames = (req, res, next) => {
         res.status(200).json(rankedPlayerChars);
     })();
 };
+export const getUsers = (req, res, next) => {
+    (async () => {
+        let users = [];
+        try {
+            const users_results = await pool.query(`SELECT id, name FROM users;`);
+            users = users_results.rows;
+        }
+        catch (error) {
+            console.error(error);
+        }
+        res.status(200).json(users);
+    })();
+};
+export const getCharacters = (req, res, next) => {
+    (async () => {
+        let characters = [];
+        try {
+            const characters_results = await pool.query(`SELECT id, name FROM characters;`);
+            characters = characters_results.rows;
+        }
+        catch (error) {
+            console.error(error);
+        }
+        res.status(200).json(characters);
+    })();
+};
 export const refreshScores = (req, res, next) => {
     (async () => {
         var games = [];
