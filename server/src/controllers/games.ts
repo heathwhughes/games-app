@@ -117,6 +117,40 @@ export const getGames: RequestHandler = (req, res, next) => {
     })();  
 };
 
+export const getUsers: RequestHandler = (req, res, next) => {
+    (async () => {
+        let users: any[] = [];
+    
+        try {
+            const users_results = await pool.query(
+                `SELECT id, name FROM users;`
+            );
+            users = users_results.rows;
+        } catch (error) {
+            console.error(error);
+        }
+
+        res.status(200).json(users);
+    })();  
+};
+
+export const getCharacters: RequestHandler = (req, res, next) => {
+    (async () => {
+        let characters: any[] = [];
+    
+        try {
+            const characters_results = await pool.query(
+                `SELECT id, name FROM characters;`
+            );
+            characters = characters_results.rows;
+        } catch (error) {
+            console.error(error);
+        }
+
+        res.status(200).json(characters);
+    })();  
+};
+
 export const refreshScores: RequestHandler = (req, res, next) => {
     (async () => {
         var games: any[] = [];
