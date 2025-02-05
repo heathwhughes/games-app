@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import './App.css'
 
 const WebForm: React.FC = () => {
@@ -10,9 +10,25 @@ const WebForm: React.FC = () => {
     loserCharacter: "",
   });
 
-  // Options for dropdowns (example data)
-  const players = ["Player 1", "Player 2", "Player 3", "Player 4"];
-  const characters = ["Character A", "Character B", "Character C", "Character D"];
+  // State for users
+  const [players, setPlayers] = useState<{ id: number; name: string }[]>([]);
+  const [characters, setCharacters] = useState<{ id: number; name: string }[]>([]);
+
+  // Fetch users from the API
+  useEffect(() => {
+    fetch("http://localhost:3000/games/users")
+      .then((response) => response.json())
+      .then((data) => setPlayers(data))
+      .catch((error) => console.error("Error fetching users:", error));
+  }, []);
+
+  // Fetch characters from the API
+  useEffect(() => {
+    fetch("http://localhost:3000/games/characters")
+      .then((response) => response.json())
+      .then((data) => setCharacters(data))
+      .catch((error) => console.error("Error fetching characters:", error));
+  }, []);
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,8 +63,8 @@ const WebForm: React.FC = () => {
         >
           <option value="">Select Winner</option>
           {players.map((player) => (
-            <option key={player} value={player}>
-              {player}
+            <option key={player.id} value={player.name}>
+              {player.name}
             </option>
           ))}
         </select>
@@ -68,8 +84,8 @@ const WebForm: React.FC = () => {
         >
           <option value="">Select Winner Character</option>
           {characters.map((character) => (
-            <option key={character} value={character}>
-              {character}
+            <option key={character.id} value={character.name}>
+              {character.name}
             </option>
           ))}
         </select>
@@ -89,8 +105,8 @@ const WebForm: React.FC = () => {
         >
           <option value="">Select Loser</option>
           {players.map((player) => (
-            <option key={player} value={player}>
-              {player}
+            <option key={player.id} value={player.name}>
+              {player.name}
             </option>
           ))}
         </select>
@@ -110,8 +126,8 @@ const WebForm: React.FC = () => {
         >
           <option value="">Select Loser Character</option>
           {characters.map((character) => (
-            <option key={character} value={character}>
-              {character}
+            <option key={character.id} value={character.name}>
+              {character.name}
             </option>
           ))}
         </select>
