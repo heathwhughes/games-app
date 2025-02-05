@@ -34,10 +34,6 @@ const WebForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // setFormData({
-    //   ...formData,
-    //   [name]: value,
-    // });
   };
 
   // Handle form submission
