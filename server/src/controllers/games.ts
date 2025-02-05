@@ -101,7 +101,7 @@ export const getGames: RequestHandler = (req, res, next) => {
         let rankedPlayerChars: any[] = [];
         try {
             for (const playerChar of playerChars) {
-                console.log(playerChar);
+                // console.log(playerChar);
                 let numGamesResult = await pool.query(`SELECT count(*) FROM games WHERE (winner_user_id = ${playerChar.user_id} AND winner_character_id = ${playerChar.character_id})
                     OR (loser_user_id = ${playerChar.user_id} AND loser_character_id = ${playerChar.character_id});`);
                 let numGames = numGamesResult.rows[0].count;

@@ -30,21 +30,61 @@ const WebForm: React.FC = () => {
       .catch((error) => console.error("Error fetching characters:", error));
   }, []);
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add form handling logic here (e.g., send data to a server)
-  };
-
   // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // setFormData({
+    //   ...formData,
+    //   [name]: value,
+    // });
   };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    console.log("Form submitted:", formData);
+
+    // Find the selected player & character IDs
+    const winnerId = players.find((player) => player.name === formData.winner)?.id;
+    const loserId = players.find((player) => player.name === formData.loser)?.id;
+    const winnerCharacterId = characters.find((char) => char.name === formData.winnerCharacter)?.id;
+    const loserCharacterId = characters.find((char) => char.name === formData.loserCharacter)?.id;
+
+    if (!winnerId || !loserId || !winnerCharacterId || !loserCharacterId) {
+      alert("Please select valid players and characters.");
+      return;
+    }
+
+    const requestBody = {
+      winner_id: winnerId,
+      loser_id: loserId,
+      winner_character_id: winnerCharacterId,
+      loser_character_id: loserCharacterId,
+    };
+
+    console.log("Submitting:", requestBody);
+
+    try {
+      const response = await fetch("http://localhost:3000/games/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (response.ok) {
+        alert("Game submitted successfully!");
+      } else {
+        alert("Error submitting game.");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Failed to submit game.");
+    }
+  };
+
+  
 
   return (
     
