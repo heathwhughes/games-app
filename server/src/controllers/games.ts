@@ -1,18 +1,21 @@
 import { RequestHandler } from 'express';
 import bodyParser from 'body-parser';
 import pg from 'pg';
+import dotenv from "dotenv";
 
 import { Game } from '../models/game.js';
 
 const { json } = bodyParser;
 const { Client } = pg;
 
+dotenv.config();
+
 const Pool = pg.Pool;
 const pool = new Pool({
-  user: 'me',
-  host: 'localhost',
-  database: 'game',
-  password: 'password',
+  user: process.env.DATABASE_USER,
+  host: process.env.DATABASE_HOST,
+  database: process.env.DATABASE_NAME,
+  password: process.env.DATABASE_PW,
   port: 5432,
 });
 
