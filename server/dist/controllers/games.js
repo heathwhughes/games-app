@@ -1,14 +1,60 @@
 import bodyParser from 'body-parser';
 import pg from 'pg';
+import dotenv from "dotenv";
+import { getSecret } from '../infrastructure/secrets.js';
 import { Game } from '../models/game.js';
 const { json } = bodyParser;
 const { Client } = pg;
+dotenv.config();
+let databaseUser;
+let databaseHost;
+let databaseName;
+let databasePassword;
+let secret;
+(async () => {
+    secret = await getSecret();
+    console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+    console.log(`secret 1: ${secret}`);
+    if (secret !== undefined) {
+        console.log(`raw secret: ${secret}`);
+        let secretValues = JSON.parse(secret);
+        console.log(`parsed secret username: ${secretValues.username}`);
+        databaseUser = secretValues.username;
+        databaseHost = secretValues.host;
+        databaseName = secretValues.dbInstanceIdentifier;
+        databasePassword = secretValues.password;
+    }
+    else {
+        throw new Error("The secret cannot be undefined");
+    }
+})();
+// if(process.env.NODE_ENV === "prod") {
+//     if (secret !== undefined) {
+//         let secretValues = JSON.parse(secret);
+//         databaseUser = secretValues.username;
+//         databaseHost = secretValues.host;
+//         databaseName = secretValues.dbname;
+//         databasePassword = secretValues.password;
+//     } else {
+//         throw new Error("The secret cannot be undefined");
+//     }
+// } else {
+//     databaseUser = process.env.DATABASE_USER;
+//     console.log(`db user: ${databaseUser}`);
+//     databaseHost = process.env.DATABASE_HOST;
+//     databaseName = process.env.DATABASE_NAME;
+//     databasePassword = process.env.DATABASE_PW;
+// };
+console.log(`db user for pool: ${databaseUser}`);
+console.log(databaseHost);
+console.log(databasePassword);
+console.log(databaseName);
 const Pool = pg.Pool;
 const pool = new Pool({
-    user: 'me',
-    host: 'localhost',
-    database: 'game',
-    password: 'password',
+    user: databaseUser,
+    host: databaseHost,
+    database: databaseName,
+    password: databasePassword,
     port: 5432,
 });
 export const createGame = (req, res, next) => {
