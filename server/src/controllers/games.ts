@@ -1,81 +1,7 @@
 import { RequestHandler } from 'express';
-import bodyParser from 'body-parser';
-import pg from 'pg';
-import dotenv from "dotenv";
-import { getSecret } from '../infrastructure/secrets.js'
 import { Game } from '../models/game.js';
+import { pool } from '../db.js';
 
-const { json } = bodyParser;
-const { Client } = pg;
-
-dotenv.config();
-
-let databaseUser;
-let databaseHost;
-let databaseName;
-let databasePassword;
-let secret;
-
-(async () => {
-    secret = await getSecret();
-
-    console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
-    console.log(`secret 1: ${secret}`);
-
-    if (secret !== undefined) {
-        console.log(`raw secret: ${secret}`)
-        let secretValues = JSON.parse(secret);
-        console.log(`parsed secret username: ${secretValues.username}`)
-
-        databaseUser = secretValues.username;
-        databaseHost = secretValues.host;
-        databaseName = secretValues.dbInstanceIdentifier;
-        databasePassword = secretValues.password;
-    } else {
-        throw new Error("The secret cannot be undefined");
-    }
-})();
-
-    
-
-    
-
-
-// if(process.env.NODE_ENV === "prod") {
-//     if (secret !== undefined) {
-//         let secretValues = JSON.parse(secret);
-
-//         databaseUser = secretValues.username;
-//         databaseHost = secretValues.host;
-//         databaseName = secretValues.dbname;
-//         databasePassword = secretValues.password;
-//     } else {
-//         throw new Error("The secret cannot be undefined");
-//     }
-// } else {
-//     databaseUser = process.env.DATABASE_USER;
-//     console.log(`db user: ${databaseUser}`);
-//     databaseHost = process.env.DATABASE_HOST;
-//     databaseName = process.env.DATABASE_NAME;
-//     databasePassword = process.env.DATABASE_PW;
-// };
-
-
-console.log(`db user for pool: ${databaseUser}`);
-console.log(databaseHost);
-console.log(databasePassword);
-console.log(databaseName);
-
-
-
-const Pool = pg.Pool;
-const pool = new Pool({
-    user: databaseUser,
-    host: databaseHost,
-    database: databaseName,
-    password: databasePassword,
-    port: 5432,
-});
 
 export const createGame: RequestHandler = (req, res, next) => {
     const winner = (req.body as {winner_id: number}).winner_id;
@@ -88,6 +14,10 @@ export const createGame: RequestHandler = (req, res, next) => {
         
         try {
             let winner_points;
+            if (!pool) {
+                console.error("Database initialization failed. Exiting...");
+                process.exit(1);
+            }
             let winner_points_results = await pool.query(`SELECT points FROM users_characters WHERE user_id = ${winner} AND character_id = ${winner_character};`);
             console.log(`num winners returned (should be 1 or 0): ${winner_points_results.rowCount}`);
             if (winner_points_results.rowCount === 0) {
@@ -147,6 +77,10 @@ export const getGames: RequestHandler = (req, res, next) => {
         let playerChars: any[] = [];
     
         try {
+            if (!pool) {
+                console.error("Database initialization failed. Exiting...");
+                process.exit(1);
+            }
             const playerChars_results = await pool.query(
                 `SELECT uc.user_id, uc.character_id, u.name as player_name, c.name as character_name, uc.points 
                 FROM users_characters uc 
@@ -163,6 +97,10 @@ export const getGames: RequestHandler = (req, res, next) => {
         try {
             for (const playerChar of playerChars) {
                 // console.log(playerChar);
+                if (!pool) {
+                    console.error("Database initialization failed. Exiting...");
+                    process.exit(1);
+                }
                 let numGamesResult = await pool.query(`SELECT count(*) FROM games WHERE (winner_user_id = ${playerChar.user_id} AND winner_character_id = ${playerChar.character_id})
                     OR (loser_user_id = ${playerChar.user_id} AND loser_character_id = ${playerChar.character_id});`);
                 let numGames = numGamesResult.rows[0].count;
@@ -183,6 +121,10 @@ export const getUsers: RequestHandler = (req, res, next) => {
         let users: any[] = [];
     
         try {
+            if (!pool) {
+                console.error("Database initialization failed. Exiting...");
+                process.exit(1);
+            }
             const users_results = await pool.query(
                 `SELECT id, name FROM users;`
             );
@@ -200,6 +142,10 @@ export const getCharacters: RequestHandler = (req, res, next) => {
         let characters: any[] = [];
     
         try {
+            if (!pool) {
+                console.error("Database initialization failed. Exiting...");
+                process.exit(1);
+            }
             const characters_results = await pool.query(
                 `SELECT id, name FROM characters;`
             );
@@ -217,6 +163,10 @@ export const refreshScores: RequestHandler = (req, res, next) => {
         var games: any[] = [];
     
         try {
+            if (!pool) {
+                console.error("Database initialization failed. Exiting...");
+                process.exit(1);
+            }
             const games_results = await pool.query('SELECT * FROM games ORDER BY id ASC;');
             games = games_results.rows;
         } catch (error) {
@@ -226,6 +176,10 @@ export const refreshScores: RequestHandler = (req, res, next) => {
         try {
             for (const game of games) {
                 console.log(`game id = ${game.id}`);
+                if (!pool) {
+                    console.error("Database initialization failed. Exiting...");
+                    process.exit(1);
+                }
                 let winner_points_results = await pool.query(`SELECT points FROM users_characters WHERE user_id = ${game.winner_user_id} AND character_id = ${game.winner_character_id};`);
                 let winner_points = winner_points_results.rows[0].points;
                 console.log(`winner points: ${winner_points}`);
